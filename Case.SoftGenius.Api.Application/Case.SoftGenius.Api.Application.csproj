@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="../Case.SoftGenius.Api.Domain/Case.SoftGenius.Api.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Countries/DeleteCountry/" />
+    <Folder Include="Countries/GetCountries/" />
+    <Folder Include="Countries/GetCountry/" />
+    <Folder Include="Countries/UpdateCountry/" />
+    <Folder Include="Users/" />
+    <Folder Include="Users/ChangeCountryOfUser/" />
+    <Folder Include="Users/CreateUser/" />
+    <Folder Include="Users/SetUserAsPassive/" />
+    <Folder Include="Users/SetUserAsPassive/SetUserAsPassive/" />
+    <Folder Include="Users/GetUser/" />
+    <Folder Include="Users/GetUsers/" />
+    <Folder Include="Users/UpdateUser/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="MediatR" Version="12.2.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

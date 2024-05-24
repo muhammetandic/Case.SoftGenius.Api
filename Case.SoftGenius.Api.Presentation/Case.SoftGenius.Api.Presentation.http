@@ -1,0 +1,6 @@
+@Case.SoftGenius.Api.Presentation_HostAddress = http://localhost:5233
+
+GET {{Case.SoftGenius.Api.Presentation_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
