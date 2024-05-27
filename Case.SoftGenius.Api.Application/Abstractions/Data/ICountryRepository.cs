@@ -2,7 +2,4 @@
 
 namespace Case.SoftGenius.Api.Application.Abstractions.Data;
 
-public interface ICountryRepository : IGenericRepository<Country>
-{
-
-}
+public interface ICountryRepository : IGenericRepository<Country>;

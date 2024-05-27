@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
+using Case.SoftGenius.Api.Application.Countries.CreateCountry;
 using Case.SoftGenius.Api.Domain.Entities;
 
-namespace Case.SoftGenius.Api.Application.Countries.CreateCountry;
+namespace Case.SoftGenius.Api.Application.Countries;
 
 public class CountryMap : Profile
 {

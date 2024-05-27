@@ -1,23 +1,45 @@
 using Case.SoftGenius.Api.Application.Countries.CreateCountry;
-using Case.SoftGenius.Api.Domain.Entities;
+using Case.SoftGenius.Api.Application.Countries.GetCountries;
+using Case.SoftGenius.Api.Application.Countries.SetCountryAsInactive;
+using Case.SoftGenius.Api.Application.Countries.UpdateCountry;
+using Case.SoftGenius.Api.Application.Users.ChangeCountryOfUser;
+using Case.SoftGenius.Api.Application.Users.CreateUser;
+using Case.SoftGenius.Api.Application.Users.GetUser;
+using Case.SoftGenius.Api.Application.Users.GetUsers;
 using Case.SoftGenius.Api.Infrastructure;
+using Case.SoftGenius.Api.Presentation.Filters;
+using Case.SoftGenius.Api.Presentation.Middlewares;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("SqlServer");
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     opt.UseSqlServer(connectionString);
 });
-
 builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssemblyContaining(typeof(CreateCountryCommand)));
+    cfg.RegisterServicesFromAssemblyContaining(typeof(CreateCountryCommand))); builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+});
+
+builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddInfrastructureServices();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateCountryCommand>();
+
 
 var app = builder.Build();
 
@@ -27,25 +49,85 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+if (app.Environment.IsProduction())
+{
+    app.UseHsts();
+    app.UseCors("AllowAll");
+    app.UseExceptionHandler("/Error");
+}
 app.UseHttpsRedirection();
 
-app.MapPost("/countries", (IMediator mediator, CreateCountryCommand request) =>
-{
-    var result = mediator.Send(request);
-    return result;
-}).WithName("CreateCountry")
-.WithOpenApi();
+var countriesGroup = app.MapGroup("").WithTags("Countries").WithOpenApi();
 
-app.MapGet("/countries", () =>
+countriesGroup.MapGet("countries", async (IMediator mediator) =>
 {
-    var countries = new List<Country>
+    var result = await mediator.Send(new GetCountriesQuery());
+    return Results.Ok(result);
+}).WithName("GetCountries");
+
+countriesGroup.MapPost("/countries", async (CreateCountryCommand request, IMediator mediator) =>
+{
+    var result = await mediator.Send(request);
+    return Results.Created("", result);
+}).WithName("CreateCountry")
+.AddEndpointFilter<ValidationFilter<CreateCountryCommand>>();
+
+countriesGroup.MapPut("/countries", async (UpdateCountryCommand request, IMediator mediator) =>
+{
+    var result = await mediator.Send(request);
+    if (result)
     {
-        new() { Id = 1, Name = "Australia" },
-        new() { Id = 2, Name = "Austria" },
-        new() { Id = 3, Name = "Belgium" }
-    };
-    return countries;
-}).WithName("GetCountries")
-.WithOpenApi();
+        return Results.NoContent();
+    }
+    return Results.NotFound();
+
+}).WithName("UpdateCountry")
+.AddEndpointFilter<ValidationFilter<UpdateCountryCommand>>();
+
+countriesGroup.MapPut("countries/set-inactive/{id}", async (uint id, IMediator mediator) =>
+{
+    var result = await mediator.Send(new SetCountryAsInactiveCommand(id));
+    if (!result)
+    {
+        return Results.NotFound();
+    }
+    return Results.NoContent();
+}).WithName("SetCountryAsInactive");
+
+var usersGroup = app.MapGroup("").WithTags("Users").WithOpenApi();
+
+usersGroup.MapPost("/users", async (CreateUserCommand request, IMediator mediator) =>
+{
+    var result = await mediator.Send(request);
+    return Results.Created("", result);
+}).WithName("CreateUser")
+.AddEndpointFilter<ValidationFilter<CreateUserCommand>>();
+
+usersGroup.MapGet("/users", async (IMediator mediator) =>
+{
+    var result = await mediator.Send(new GetUsersQuery());
+    return Results.Ok(result);
+}).WithName("GetUsers");
+
+usersGroup.MapGet("/users/{id}", async (uint id, IMediator mediator) =>
+{
+    var result = await mediator.Send(new GetUserQuery(id));
+    if (result is null)
+    {
+        return Results.NotFound();
+    }
+    return Results.Ok(result);
+}).WithName("GetUser");
+
+usersGroup.MapPut("/users/change-country", async (ChangeCountryOfUserCommand request, IMediator mediator) =>
+{
+    var result = await mediator.Send(request);
+    if (!result)
+    {
+        return Results.NotFound();
+    }
+    return Results.NoContent();
+}).WithName("ChangeCountry");
+
 
 app.Run();

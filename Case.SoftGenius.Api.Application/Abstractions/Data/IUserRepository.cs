@@ -2,7 +2,4 @@
 
 namespace Case.SoftGenius.Api.Application.Abstractions.Data;
 
-public interface IUserRepository : IGenericRepository<User>
-{
-
-}
+public interface IUserRepository : IGenericRepository<User>;

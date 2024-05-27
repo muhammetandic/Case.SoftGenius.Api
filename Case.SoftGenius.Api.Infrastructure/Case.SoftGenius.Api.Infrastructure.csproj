@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Case.SoftGenius.Api.Domain/Case.SoftGenius.Api.Domain.csproj" />
     <ProjectReference Include="..\Case.SoftGenius.Api.Application\Case.SoftGenius.Api.Application.csproj" />
   </ItemGroup>
 
