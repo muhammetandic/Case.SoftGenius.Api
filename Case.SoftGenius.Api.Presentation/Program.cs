@@ -4,8 +4,10 @@ using Case.SoftGenius.Api.Application.Countries.SetCountryAsInactive;
 using Case.SoftGenius.Api.Application.Countries.UpdateCountry;
 using Case.SoftGenius.Api.Application.Users.ChangeCountryOfUser;
 using Case.SoftGenius.Api.Application.Users.CreateUser;
+using Case.SoftGenius.Api.Application.Users.DeleteUser;
 using Case.SoftGenius.Api.Application.Users.GetUser;
 using Case.SoftGenius.Api.Application.Users.GetUsers;
+using Case.SoftGenius.Api.Application.Users.UpdateUser;
 using Case.SoftGenius.Api.Infrastructure;
 using Case.SoftGenius.Api.Presentation.Filters;
 using Case.SoftGenius.Api.Presentation.Middlewares;
@@ -52,9 +54,9 @@ if (app.Environment.IsDevelopment())
 if (app.Environment.IsProduction())
 {
     app.UseHsts();
-    app.UseCors("AllowAll");
     app.UseExceptionHandler("/Error");
 }
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
 var countriesGroup = app.MapGroup("").WithTags("Countries").WithOpenApi();
@@ -119,6 +121,16 @@ usersGroup.MapGet("/users/{id}", async (uint id, IMediator mediator) =>
     return Results.Ok(result);
 }).WithName("GetUser");
 
+usersGroup.MapPut("/users", async (UpdateUserCommand request, IMediator mediator) =>
+{
+    var result = await mediator.Send(request);
+    if (!result)
+    {
+        return Results.NotFound();
+    }
+    return Results.NoContent();
+}).WithName("UpdateUser");
+
 usersGroup.MapPut("/users/change-country", async (ChangeCountryOfUserCommand request, IMediator mediator) =>
 {
     var result = await mediator.Send(request);
@@ -128,6 +140,16 @@ usersGroup.MapPut("/users/change-country", async (ChangeCountryOfUserCommand req
     }
     return Results.NoContent();
 }).WithName("ChangeCountry");
+
+usersGroup.MapDelete("/users/{id}", async (uint id, IMediator mediator) =>
+{
+    var result = await mediator.Send(new DeleteUserCommand(id));
+    if (!result)
+    {
+        return Results.NotFound();
+    }
+    return Results.NoContent();
+}).WithName("DeleteUser");
 
 
 app.Run();

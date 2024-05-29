@@ -7,6 +7,6 @@ public class CreateUserValidator : AbstractValidator<CreateUserCommand>
     public CreateUserValidator()
     {
         RuleFor(c => c.Name).NotEmpty();
-        RuleFor(c => c.Email).NotEmpty();
+        RuleFor(c => c.Email).EmailAddress().NotEmpty();
     }
 }
