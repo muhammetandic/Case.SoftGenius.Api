@@ -7,7 +7,7 @@ public interface IGenericRepository<TEntity> where TEntity : IEntity
 {
     IQueryable<TEntity> Table { get; }
 
-    Task<IList<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? predicate = null);
+    Task<(IEnumerable<TEntity> Data, int TotalCount)> GetAllAsync(Expression<Func<TEntity, bool>>? predicate = null);
 
     Task<TEntity?> GetByIdAsync(uint id);
 

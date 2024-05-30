@@ -8,6 +8,7 @@ using Case.SoftGenius.Api.Application.Users.DeleteUser;
 using Case.SoftGenius.Api.Application.Users.GetUser;
 using Case.SoftGenius.Api.Application.Users.GetUsers;
 using Case.SoftGenius.Api.Application.Users.UpdateUser;
+using Case.SoftGenius.Api.Domain.Dtos;
 using Case.SoftGenius.Api.Infrastructure;
 using Case.SoftGenius.Api.Presentation.Filters;
 using Case.SoftGenius.Api.Presentation.Middlewares;
@@ -51,19 +52,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-if (app.Environment.IsProduction())
+if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
     app.UseExceptionHandler("/Error");
 }
+
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
 var countriesGroup = app.MapGroup("").WithTags("Countries").WithOpenApi();
 
-countriesGroup.MapGet("countries", async (IMediator mediator) =>
+countriesGroup.MapGet("/countries", async ([AsParameters] QueryFilter filter, IMediator mediator) =>
 {
-    var result = await mediator.Send(new GetCountriesQuery());
+    var result = await mediator.Send(new GetCountriesQuery(filter));
     return Results.Ok(result);
 }).WithName("GetCountries");
 
@@ -86,7 +88,7 @@ countriesGroup.MapPut("/countries", async (UpdateCountryCommand request, IMediat
 }).WithName("UpdateCountry")
 .AddEndpointFilter<ValidationFilter<UpdateCountryCommand>>();
 
-countriesGroup.MapPut("countries/set-inactive/{id}", async (uint id, IMediator mediator) =>
+countriesGroup.MapPut("/countries/set-inactive/{id}", async (uint id, IMediator mediator) =>
 {
     var result = await mediator.Send(new SetCountryAsInactiveCommand(id));
     if (!result)
@@ -105,9 +107,10 @@ usersGroup.MapPost("/users", async (CreateUserCommand request, IMediator mediato
 }).WithName("CreateUser")
 .AddEndpointFilter<ValidationFilter<CreateUserCommand>>();
 
-usersGroup.MapGet("/users", async (IMediator mediator) =>
+usersGroup.MapGet("/users", async ([AsParameters] QueryFilter filter, IMediator mediator) =>
 {
-    var result = await mediator.Send(new GetUsersQuery());
+    var deneme = filter;
+    var result = await mediator.Send(new GetUsersQuery(filter));
     return Results.Ok(result);
 }).WithName("GetUsers");
 

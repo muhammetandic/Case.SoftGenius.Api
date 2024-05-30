@@ -12,14 +12,16 @@ public class GenericRepository<TEntity>(AppDbContext appDbContext) : IGenericRep
     private readonly AppDbContext _appDbContext = appDbContext;
     public IQueryable<TEntity> Table => _appDbContext.Set<TEntity>();
 
-    public async Task<IList<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? predicate = null)
+    public async Task<(IEnumerable<TEntity> Data, int TotalCount)> GetAllAsync(Expression<Func<TEntity, bool>>? predicate = null)
     {
         var result = Table.AsQueryable().AsNoTracking();
         if (predicate is not null)
         {
             result.Where(predicate);
         }
-        return await result.ToListAsync();
+        var data = await result.ToListAsync();
+        var totalCount = await result.CountAsync();
+        return (data, totalCount);
     }
 
     public async Task<TEntity?> GetByIdAsync(uint id)
